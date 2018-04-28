@@ -38,7 +38,12 @@ def Dict_onebymul(dict_0):
         if k not in d:
             d[k] = v
         else :
-            d[k] =[d[k]]
-            d[k].append(v)
+            if type(d[k]) is str:
+                d[k] = [d[k]]
+                d[k].append(v)
+                print(type(d[k]))
+            else:
+                print(type(d[k]))
+                d[k].append(v)
     return d
 
