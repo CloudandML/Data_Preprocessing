@@ -30,6 +30,8 @@ def get_sql_attr_data(data_name):
     #对内容进行过滤 
     data_dict = {att:list() for att in attrs}
     for d in data_data:
+        #将null 更换为 "\'\'"
+        d = re.sub("null","\'\'",d)
         d_sub = d.split("\', \'")
         for dd,att in zip(d_sub,attrs):
             #第一个属性
