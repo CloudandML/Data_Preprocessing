@@ -1,0 +1,53 @@
+import re
+import pandas as pd
+
+def read_file(data_name):
+    data = []
+    with open(data_name,'r',encoding='utf-8') as f:
+        line = f.readline()
+        data.append(line)
+    return data
+       
+def get_sql_attr_data(data_name):
+    data = read_file('sp_article.sql')
+    # 获取sql文件的sql表语句（表属性等）
+    attr = []
+    for i in range(len(data)):
+        if data[i].startswith("CREATE TABLE"):
+            for j in range(i,len(data)):
+                attr.append(data[j])
+                if data[j].startswith(")"):
+                    break
+    # 获取属性名词
+    attrs = []
+    for a in attr:
+        if a.startswith("  `"):
+            attrs.append(a.split(" ")[2][1:-1])
+    #获取数据所有属性具体内容
+    data_data = []
+    for d in data:
+        if d.startswith("INSERT INTO"):
+            data_data.append(d)
+    #对内容进行过滤 
+    data_dict = {att:list() for att in attrs}
+    for d in data_data:
+        d_sub = d.split("\', \'")
+        for dd,att in zip(d_sub,attrs):
+            #第一个属性
+            if att == "id":
+                dd = dd.split("VALUES ('")[-1]
+                data_dict[att].append(dd)
+            #最后属性，content的内容
+            elif att=='content':
+                dd = re.sub("<.*?>|\s|\t|\n|\r|\\\\n|&nbsp;","",dd) #<.*?>表示以<开头直至以>结束
+                data_dict[att].append(dd[:-3])
+            else:
+                data_dict[att].append(dd)
+    return data_dict
+
+#dict 转为 pandas.DataFrame()
+def dict2DataFrame(data_dict):
+    data_pd = pd.DataFrame(columns=data_d.keys())
+    for keys,values in data_d.items():
+        data_pd[keys] = values
+    return data_pd
